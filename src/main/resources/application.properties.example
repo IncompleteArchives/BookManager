@@ -1,0 +1,4 @@
+db.url=jdbc:postgresql://localhost:5432/bookdb
+db.username=YOUR_USERNAME
+db.password=YOUR_PASSWORD
+db.driver=org.postgresql.Driver
