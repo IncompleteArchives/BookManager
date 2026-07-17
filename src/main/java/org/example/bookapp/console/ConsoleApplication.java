@@ -14,7 +14,7 @@ import java.util.Scanner;
 public class ConsoleApplication {
 
     private final BookService service;
-    public static final String COMMANDS =
+    private static final String COMMANDS =
             """
                     add          Adds new book to the table.
                     list         Prints all books from the table.
