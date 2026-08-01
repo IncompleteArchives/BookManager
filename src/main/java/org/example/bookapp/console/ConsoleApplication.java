@@ -114,8 +114,8 @@ public class ConsoleApplication {
                 return;
             }
 
-            authorService.addAuthorWithBooks(author, books);
-            System.out.println("Author and books added successfully");
+            Integer authorId = authorService.addAuthorWithBooks(author, books);
+            System.out.println("Author (ID=" + authorId + ") and books added successfully");
 
         } catch (RuntimeException e) {
             System.out.println("Author and books was not added: " + e.getMessage());
@@ -244,8 +244,8 @@ public class ConsoleApplication {
         if (author == null) return;
 
         try {
-            authorService.addAuthor(author);
-            System.out.println("Author added successfully");
+            Integer authorId = authorService.addAuthor(author);
+            System.out.println("Author (ID=" + authorId +") added successfully");
         } catch (InvalidAuthorException e) {
             System.out.println("Author was not added: " + e.getMessage());
         }

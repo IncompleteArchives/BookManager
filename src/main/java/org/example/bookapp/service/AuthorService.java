@@ -58,7 +58,7 @@ public class AuthorService {
     }
 
     @Transactional
-    public void addAuthorWithBooks(Author author, List<Book> books) {
+    public Integer addAuthorWithBooks(Author author, List<Book> books) {
 
         try {
             Integer authorId = repository.add(author);
@@ -67,6 +67,8 @@ public class AuthorService {
                 book.setAuthorId(authorId);
                 bookRepository.add(book);
             }
+
+            return authorId;
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to insert author with books", e);
         }
