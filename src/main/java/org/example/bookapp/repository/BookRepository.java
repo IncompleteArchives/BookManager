@@ -18,8 +18,8 @@ public class BookRepository {
             (resultSet, rowNum) -> new Book(
                     resultSet.getInt("id"),
                     resultSet.getString("name"),
-                    resultSet.getString("author"),
-                    resultSet.getInt("publication_year")
+                    resultSet.getInt("publication_year"),
+                    resultSet.getObject("author_id", Integer.class)
             );
 
     @Autowired
@@ -28,17 +28,29 @@ public class BookRepository {
     }
 
     public void add(Book book) {
-        jdbcTemplate.update("INSERT INTO books(name, author, publication_year) VALUES (?, ?, ?)",
-                book.getName(), book.getAuthor(), book.getPublicationYear());
+        jdbcTemplate.update("INSERT INTO books(name, publication_year, author_id) VALUES (?, ?, ?)",
+                book.getName(), book.getPublicationYear(), book.getAuthorId());
     }
 
     public List<Book> findAll() {
         return jdbcTemplate.query("SELECT * FROM books ORDER BY id ASC", BOOK_ROW_MAPPER);
     }
 
-    public Optional<Book> findByName(String name) {
-        return jdbcTemplate.query("SELECT * FROM books WHERE name = ?", BOOK_ROW_MAPPER, name)
+    public List<Book> findByNameContains(String name) {
+        return jdbcTemplate.query("SELECT * FROM books WHERE name ILIKE ?", BOOK_ROW_MAPPER, "%" + name + "%");
+    }
+
+    public List<Book> findByAuthorId(Integer authorId) {
+        return jdbcTemplate.query("SELECT * FROM books WHERE author_id = ? ORDER BY publication_year", BOOK_ROW_MAPPER, authorId);
+    }
+
+    public Optional<Book> findById(Integer id) {
+        return jdbcTemplate.query("SELECT * FROM books WHERE id = ?", BOOK_ROW_MAPPER, id)
                 .stream()
                 .findFirst();
+    }
+
+    public int updateAuthor(Integer bookId, Integer authorId) {
+        return jdbcTemplate.update("UPDATE books SET author_id = ? WHERE id = ?", authorId, bookId);
     }
 }

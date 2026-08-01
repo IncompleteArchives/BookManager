@@ -6,7 +6,7 @@ build/
 .kotlin
 
 #Local DB configuration
-src/main/resources/application.properties
+src/main/resources/application.properties.example
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
