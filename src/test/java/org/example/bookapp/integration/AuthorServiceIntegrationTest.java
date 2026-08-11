@@ -5,10 +5,7 @@ import org.example.bookapp.model.Author;
 import org.example.bookapp.model.Book;
 import org.example.bookapp.service.AuthorService;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -30,9 +27,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Testcontainers
 class AuthorServiceIntegrationTest {
 
-    private AnnotationConfigApplicationContext context;
-    private AuthorService authorService;
-    private JdbcTemplate jdbcTemplate;
+    private static AnnotationConfigApplicationContext context;
+    private static AuthorService authorService;
+    private static JdbcTemplate jdbcTemplate;
 
     @Container
     static PostgreSQLContainer<?> postgres =
@@ -42,16 +39,12 @@ class AuthorServiceIntegrationTest {
                     .withPassword("test");
 
     @BeforeAll
-    static void configureDataSource() {
+    static void configureDataSource() throws SQLException {
 
         PostgresTestConfig.dbUrl = postgres.getJdbcUrl();
         PostgresTestConfig.dbUsername = postgres.getUsername();
         PostgresTestConfig.dbPassword = postgres.getPassword();
         PostgresTestConfig.dbDriver = "org.postgresql.Driver";
-    }
-
-    @BeforeEach
-    void setUp() throws SQLException {
 
         context = new AnnotationConfigApplicationContext(PostgresTestConfig.class);
         authorService = context.getBean(AuthorService.class);
@@ -60,15 +53,19 @@ class AuthorServiceIntegrationTest {
         initializeDatabase();
     }
 
-    @AfterEach
-    void tearDown() {
+    @BeforeEach
+    void setUp() {
 
         jdbcTemplate.execute("TRUNCATE TABLE books, authors RESTART IDENTITY CASCADE");
+    }
+
+    @AfterAll
+    static void tearDownClass() {
 
         context.close();
     }
 
-    private void initializeDatabase() throws SQLException {
+    private static void initializeDatabase() throws SQLException {
 
         ClassPathResource resource = new ClassPathResource("schema.sql");
 
