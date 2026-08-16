@@ -1,12 +1,12 @@
 package org.example.bookapp.integration;
 
+import org.example.bookapp.config.JpaConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
@@ -14,6 +14,7 @@ import javax.sql.DataSource;
 @Configuration
 @ComponentScan("org.example.bookapp")
 @EnableTransactionManagement
+@Import(JpaConfig.class)
 public class PostgresTestConfig {
 
     public static String dbUrl;
@@ -39,8 +40,4 @@ public class PostgresTestConfig {
         return new JdbcTemplate(dataSource);
     }
 
-    @Bean
-    public PlatformTransactionManager transactionManager(DataSource dataSource) {
-        return new DataSourceTransactionManager(dataSource);
-    }
 }

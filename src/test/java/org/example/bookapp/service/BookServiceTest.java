@@ -41,20 +41,32 @@ class BookServiceTest {
     void addBook_shouldAddBook() {
 
         String name = "SomeBook";
-        Integer publicationYear = 1;
+        Integer publicationYear = 1960;
         Integer authorId = 1;
+
+        Author author = new Author(
+                "Audrey",
+                null,
+                "Barker",
+                "F",
+                LocalDate.of(1918, 4, 13)
+        );
+
+        author.setId(authorId);
+
+        when(authorRepository.findById(authorId)).thenReturn(Optional.of(author));
 
         bookService.addBook(name, publicationYear, authorId);
 
         ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
 
-        verify(bookRepository).add(bookCaptor.capture());
+        verify(bookRepository).save(bookCaptor.capture());
 
         Book book = bookCaptor.getValue();
 
         assertThat(book.getName()).isEqualTo(name);
         assertThat(book.getPublicationYear()).isEqualTo(publicationYear);
-        assertThat(book.getAuthorId()).isEqualTo(authorId);
+        assertThat(book.getAuthor()).isSameAs(author);
     }
 
     @Test
@@ -65,7 +77,7 @@ class BookServiceTest {
                 .isInstanceOf(InvalidBookException.class)
                 .hasMessage("book name cannot be null or blank");
 
-        verify(bookRepository, never()).add(any(Book.class));
+        verify(bookRepository, never()).save(any(Book.class));
     }
 
     @Test
@@ -78,21 +90,34 @@ class BookServiceTest {
                 .isInstanceOf(InvalidBookException.class)
                 .hasMessage("publication year must be between 1 and " + currentYear);
 
-        verify(bookRepository, never()).add(any(Book.class));
+        verify(bookRepository, never()).save(any(Book.class));
     }
 
     @Test
     void addBook_shouldThrowDatabaseOperationException_whenRepositoryFails() {
 
+        Author author = new Author(
+                "Audrey",
+                null,
+                "Barker",
+                "F",
+                LocalDate.of(1918, 4, 13)
+        );
+
+        author.setId(7);
+
+        when(authorRepository.findById(7)).thenReturn(Optional.of(author));
+
         doThrow(new DataAccessException("Database error") {})
                 .when(bookRepository)
-                .add(any(Book.class));
+                .save(any(Book.class));
 
         assertThatThrownBy(() -> bookService.addBook("Zeph", 1992, 7))
                 .isInstanceOf(DatabaseOperationException.class)
                 .hasMessage("Unable to insert book");
 
-        verify(bookRepository).add(any(Book.class));
+        verify(authorRepository).findById(7);
+        verify(bookRepository).save(any(Book.class));
     }
 
     @Test
@@ -130,13 +155,13 @@ class BookServiceTest {
         Book book1 = new Book("War and Peace", 1867);
         Book book2 = new Book("Peace Like a River", 2001);
 
-        when(bookRepository.findByNameContains("peac")).thenReturn(List.of(book1, book2));
+        when(bookRepository.findByNameContaining("Peac")).thenReturn(List.of(book1, book2));
 
-        List<Book> result = bookService.findByNameContains("peac");
+        List<Book> result = bookService.findByNameContains("Peac");
 
         assertThat(result).containsExactly(book1, book2);
 
-        verify(bookRepository).findByNameContains("peac");
+        verify(bookRepository).findByNameContaining("Peac");
     }
 
     @Test
@@ -147,20 +172,20 @@ class BookServiceTest {
                 .isInstanceOf(InvalidBookException.class)
                 .hasMessage("Book name cannot be null or blank");
 
-        verify(bookRepository, never()).findByNameContains(anyString());
+        verify(bookRepository, never()).findByNameContaining(anyString());
     }
 
     @Test
     void findByNameContains_shouldThrowDatabaseOperationException_whenRepositoryFails() {
 
-        when(bookRepository.findByNameContains("peace")).thenThrow(new DataAccessException("Database error") {});
+        when(bookRepository.findByNameContaining("Peace")).thenThrow(new DataAccessException("Database error") {});
 
         assertThatThrownBy(() ->
-                bookService.findByNameContains("peace"))
+                bookService.findByNameContains("Peace"))
                 .isInstanceOf(DatabaseOperationException.class)
                 .hasMessage("Unable to find book");
 
-        verify(bookRepository).findByNameContains("peace");
+        verify(bookRepository).findByNameContaining("Peace");
     }
 
     @Test
@@ -182,7 +207,8 @@ class BookServiceTest {
 
         verify(bookRepository).findById(1);
         verify(authorRepository).findById(7);
-        verify(bookRepository).updateAuthor(1, 7);
+
+        assertThat(book.getAuthor()).isSameAs(author);
     }
 
     @Test
@@ -196,8 +222,7 @@ class BookServiceTest {
                 .hasMessage("book not found");
 
         verify(bookRepository).findById(1);
-        verify(authorRepository, never()).findById(5);
-        verify(bookRepository, never()).updateAuthor(anyInt(), anyInt());
+        verify(authorRepository, never()).findById(anyInt());
     }
 
     @Test
@@ -215,27 +240,12 @@ class BookServiceTest {
 
         verify(bookRepository).findById(1);
         verify(authorRepository).findById(7);
-        verify(bookRepository, never()).updateAuthor(anyInt(), anyInt());
     }
 
     @Test
     void transferBook_shouldThrowDatabaseOperationException_whenUpdateFails() {
 
-        Book book = new Book("Zeph", 1992);
-
-        Author author = new Author("Audrey",
-                null,
-                "Barker",
-                "F",
-                LocalDate.of(1918, 4, 13)
-        );
-
-        when(bookRepository.findById(1)).thenReturn(Optional.of(book));
-        when(authorRepository.findById(7)).thenReturn(Optional.of(author));
-
-        doThrow(new DataAccessException("Database error") {})
-                .when(bookRepository)
-                .updateAuthor(1, 7);
+        when(bookRepository.findById(1)).thenThrow(new DataAccessException("Database error") {});
 
         assertThatThrownBy(() ->
                 bookService.transferBook(1, 7))
@@ -243,8 +253,7 @@ class BookServiceTest {
                 .hasMessage("Unable to transfer book");
 
         verify(bookRepository).findById(1);
-        verify(authorRepository).findById(7);
-        verify(bookRepository).updateAuthor(1, 7);
+        verify(authorRepository, never()).findById(anyInt());
     }
 
 

@@ -5,13 +5,16 @@ import org.example.bookapp.model.Author;
 import org.example.bookapp.model.Book;
 import org.example.bookapp.service.AuthorService;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
-
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -46,11 +49,12 @@ class AuthorServiceIntegrationTest {
         PostgresTestConfig.dbPassword = postgres.getPassword();
         PostgresTestConfig.dbDriver = "org.postgresql.Driver";
 
+        initializeDatabase();
+
         context = new AnnotationConfigApplicationContext(PostgresTestConfig.class);
         authorService = context.getBean(AuthorService.class);
         jdbcTemplate = context.getBean(JdbcTemplate.class);
 
-        initializeDatabase();
     }
 
     @BeforeEach
@@ -67,9 +71,17 @@ class AuthorServiceIntegrationTest {
 
     private static void initializeDatabase() throws SQLException {
 
+        DriverManagerDataSource dataSource =
+                new DriverManagerDataSource(
+                        PostgresTestConfig.dbUrl,
+                        PostgresTestConfig.dbUsername,
+                        PostgresTestConfig.dbPassword);
+
+        dataSource.setDriverClassName(PostgresTestConfig.dbDriver);
+
         ClassPathResource resource = new ClassPathResource("schema.sql");
 
-        try (Connection connection = jdbcTemplate.getDataSource().getConnection()) {
+        try (Connection connection = dataSource.getConnection()) {
             ScriptUtils.executeSqlScript(connection, resource);
         }
     }
@@ -136,7 +148,7 @@ class AuthorServiceIntegrationTest {
         );
 
         Book book1 = new Book("Book1", 1999);
-        Book book2 = new Book(null, 1992);
+        Book book2 = new Book("B".repeat(256), 1992);
         List<Book> books = List.of(book1, book2);
 
         assertThatThrownBy(() ->

@@ -311,7 +311,7 @@ public class ConsoleApplication {
         try {
             service.addBook(name, year, authorId);
             System.out.println("Book added successfully");
-        } catch (InvalidBookException e) {
+        } catch (InvalidBookException | InvalidAuthorException e) {
             System.out.println("Book was not added: " + e.getMessage());
         }
 

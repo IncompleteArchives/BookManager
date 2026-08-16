@@ -6,7 +6,6 @@ import org.example.bookapp.exception.DatabaseOperationException;
 import org.example.bookapp.model.Author;
 import org.example.bookapp.model.Book;
 import org.example.bookapp.repository.AuthorRepository;
-import org.example.bookapp.repository.BookRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -20,67 +19,67 @@ import java.util.Optional;
 public class AuthorService {
 
     private final AuthorRepository repository;
-    private final BookRepository bookRepository;
 
     @Autowired
-    public AuthorService(AuthorRepository repository, BookRepository bookRepository) {
+    public AuthorService(AuthorRepository repository) {
         this.repository = repository;
-        this.bookRepository = bookRepository;
     }
 
+    @Transactional
     public Optional<Author> findById(Integer id) {
-
         try {
-            Optional<Author> author = repository.findById(id);
-
-            if (author.isEmpty()) return Optional.empty();
-
-            List<Book> books = bookRepository.findByAuthorId(id);
-            author.get().setBooks(books);
-
-            return author;
+            return repository.findByIdWithBooks(id);
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to retrieve author", e);
         }
     }
 
+    @Transactional
     public void deleteAuthor(Integer id) {
-
         try {
-            if (repository.findById(id).isEmpty()) throw new AuthorNotFoundException();
-            if (!bookRepository.findByAuthorId(id).isEmpty()) throw new AuthorHasBooksException();
+            Author author = repository.findById(id).orElseThrow(AuthorNotFoundException::new);
 
-            repository.delete(id);
+            if (!author.getBooks().isEmpty()) throw new AuthorHasBooksException();
+
+            repository.delete(author);
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to delete author", e);
         }
-
     }
 
     @Transactional
     public Integer addAuthorWithBooks(Author author, List<Book> books) {
-
         try {
-            Integer authorId = repository.add(author);
-
             for (Book book : books) {
-                book.setAuthorId(authorId);
-                bookRepository.add(book);
+                author.addBook(book);
             }
 
-            return authorId;
+            return repository.save(author).getId();
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to insert author with books", e);
         }
-
     }
 
     public Integer addAuthor(Author author) {
-
         try {
-            return repository.add(author);
+            return repository.save(author).getId();
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to insert author", e);
         }
     }
+
+    @Transactional
+    public void updateAuthor(Integer id, String firstName, String middleName, String lastName, String gender) {
+        try {
+            Author author = repository.findById(id).orElseThrow(AuthorNotFoundException::new);
+
+            author.setFirstName(firstName);
+            author.setMiddleName(middleName);
+            author.setLastName(lastName);
+            author.setGender(gender);
+        } catch (DataAccessException e) {
+            throw new DatabaseOperationException("Unable to update author", e);
+        }
+    }
+
 }

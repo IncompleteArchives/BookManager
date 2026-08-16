@@ -3,6 +3,7 @@ package org.example.bookapp.service;
 import org.example.bookapp.exception.DatabaseOperationException;
 import org.example.bookapp.exception.InvalidAuthorException;
 import org.example.bookapp.exception.InvalidBookException;
+import org.example.bookapp.model.Author;
 import org.example.bookapp.model.Book;
 import org.example.bookapp.repository.AuthorRepository;
 import org.example.bookapp.repository.BookRepository;
@@ -10,8 +11,8 @@ import org.example.bookapp.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Year;
 import java.util.List;
 
 @Service
@@ -27,23 +28,15 @@ public class BookService {
     }
 
     public void addBook(String name, Integer publicationYear, Integer authorId) {
-
         try {
-            if (name == null || name.isBlank()) {
-                throw new InvalidBookException("book name cannot be null or blank");
-            }
 
-            int currentYear = Year.now().getValue();
-            if (publicationYear == null || publicationYear <= 0 || publicationYear > currentYear) {
-                throw new InvalidBookException("publication year must be between 1 and " + currentYear);
-            }
+            Book book = new Book(name, publicationYear);
 
-            Book book = new Book();
-            book.setName(name);
-            book.setPublicationYear(publicationYear);
-            book.setAuthorId(authorId);
+            Author author = authorRepository.findById(authorId).orElseThrow(() -> new InvalidAuthorException("author not found"));
 
-            repository.add(book);
+            book.setAuthor(author);
+
+            repository.save(book);
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to insert book", e);
         }
@@ -59,30 +52,38 @@ public class BookService {
     }
 
     public List<Book> findByNameContains(String name) {
-
         try {
-            if (name == null || name.isBlank()) {
-                throw new InvalidBookException("Book name cannot be null or blank");
-            }
+            if (name == null || name.isBlank()) throw new InvalidBookException("Book name cannot be null or blank");
 
-            return repository.findByNameContains(name);
+            return repository.findByNameContaining(name);
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to find book", e);
         }
     }
 
+    @Transactional
     public void transferBook(Integer bookId, Integer authorId) {
-
         try {
-            repository.findById(bookId).orElseThrow(() -> new InvalidBookException("book not found"));
-            authorRepository.findById(authorId).orElseThrow(() -> new InvalidAuthorException("author not found"));
+            Book book = repository.findById(bookId).orElseThrow(() -> new InvalidBookException("book not found"));
 
-            repository.updateAuthor(bookId, authorId);
+            Author author = authorRepository.findById(authorId).orElseThrow(() -> new InvalidAuthorException("author not found"));
 
+            book.setAuthor(author);
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to transfer book", e);
         }
 
+    }
+
+    public List<Book> findByNameAndAuthor(String name, Integer authorId) {
+        try {
+            if (name == null || name.isBlank()) throw new InvalidBookException("Book name cannot be null or blank");
+            if (authorId == null) throw new InvalidAuthorException("author ID cannot be null");
+
+            return repository.findByNameContainingAndAuthor_Id(name, authorId);
+        } catch (DatabaseOperationException e) {
+            throw new DatabaseOperationException("Unable to find book", e);
+        }
     }
 
 }

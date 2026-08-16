@@ -1,5 +1,6 @@
 package org.example.bookapp.model;
 
+import jakarta.persistence.*;
 import org.example.bookapp.exception.InvalidAuthorException;
 
 import java.time.LocalDate;
@@ -7,27 +8,37 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Entity
+@Table(name = "authors")
 public class Author {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(name = "first_name", nullable = false)
     private String firstName;
+
+    @Column(name = "middle_name")
     private String middleName;
+
+    @Column(name = "last_name", nullable = false)
     private String lastName;
+
+    @Column(name = "gender")
     private String gender;
+
+    @Column(name = "birth_date")
     private LocalDate birthDate;
+
+    @OneToMany(
+            mappedBy = "author",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private List<Book> books = new ArrayList<>();
 
     public Author() {
-    }
-
-    public Author(Integer id, String firstName, String middleName, String lastName, String gender, LocalDate birthDate) {
-        this.id = id;
-        this.firstName = firstName;
-        this.middleName = middleName;
-        this.lastName = lastName;
-        this.gender = gender;
-        this.birthDate = birthDate;
     }
 
     public Author(String firstName, String middleName, String lastName, String gender, LocalDate birthDate) {
@@ -85,6 +96,26 @@ public class Author {
         return books;
     }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setMiddleName(String middleName) {
+        this.middleName = middleName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
     public void setBooks(List<Book> books) {
         this.books = books;
     }
@@ -101,4 +132,15 @@ public class Author {
                 birthDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         );
     }
+
+    public void addBook(Book book) {
+        books.add(book);
+        book.setAuthor(this);
+    }
+
+    public void removeBook(Book book) {
+        books.remove(book);
+        book.setAuthor(null);
+    }
+
 }

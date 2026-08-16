@@ -1,26 +1,42 @@
 package org.example.bookapp.model;
 
+import jakarta.persistence.*;
+import org.example.bookapp.exception.InvalidBookException;
+
+import java.time.Year;
+
+@Entity
+@Table(name = "books")
 public class Book {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "publication_year")
     private Integer publicationYear;
-    private Integer authorId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private Author author;
 
     public Book() {
     }
 
-    public Book(Integer id,
-                String name,
-                Integer publicationYear,
-                Integer authorId) {
-        this.id = id;
-        this.name = name;
-        this.publicationYear = publicationYear;
-        this.authorId = authorId;
-    }
-
     public Book(String name, Integer publicationYear) {
+
+        if (name == null || name.isBlank()) {
+            throw new InvalidBookException("book name cannot be null or blank");
+        }
+
+        int currentYear = Year.now().getValue();
+        if (publicationYear == null || publicationYear <= 0 || publicationYear > currentYear) {
+            throw new InvalidBookException("publication year must be between 1 and " + currentYear);
+        }
+
         this.name = name;
         this.publicationYear = publicationYear;
     }
@@ -37,8 +53,8 @@ public class Book {
         return publicationYear;
     }
 
-    public Integer getAuthorId() {
-        return authorId;
+    public Author getAuthor() {
+        return author;
     }
 
     public void setName(String name) {
@@ -49,8 +65,8 @@ public class Book {
         this.publicationYear = publicationYear;
     }
 
-    public void setAuthorId(Integer authorId) {
-        this.authorId = authorId;
+    public void setAuthor(Author author) {
+        this.author = author;
     }
 
     @Override
@@ -60,7 +76,7 @@ public class Book {
                 id,
                 name,
                 publicationYear,
-                authorId
+                author != null ? author.getId() : null
         );
     }
 }
