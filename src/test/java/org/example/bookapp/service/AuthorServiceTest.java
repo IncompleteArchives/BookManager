@@ -32,6 +32,78 @@ class AuthorServiceTest {
     AuthorRepository authorRepository;
 
     @Test
+    void updateAuthor_shouldUpdateAuthor_withoutSave() {
+
+        Author author = new Author("Audrey",
+                null,
+                "Barker",
+                "F",
+                LocalDate.of(1918, 4, 13)
+        );
+
+        Author authorData = new Author("Jane",
+                "Marie",
+                "Smith",
+                "F",
+                LocalDate.of(1920, 5, 20)
+        );
+
+        when(authorRepository.findById(1)).thenReturn(Optional.of(author));
+
+        authorService.updateAuthor(1, authorData);
+
+        assertThat(author.getFirstName()).isEqualTo("Jane");
+        assertThat(author.getMiddleName()).isEqualTo("Marie");
+        assertThat(author.getLastName()).isEqualTo("Smith");
+        assertThat(author.getGender()).isEqualTo("F");
+        assertThat(author.getBirthDate()).isEqualTo(LocalDate.of(1920, 5, 20));
+
+        verify(authorRepository).findById(1);
+        verify(authorRepository, never()).save(any(Author.class));
+    }
+
+    @Test
+    void updateAuthor_shouldThrowAuthorNotFoundException_whenAuthorDoesNotExist() {
+
+        Author authorData = new Author("Jane",
+                "Marie",
+                "Smith",
+                "F",
+                LocalDate.of(1920, 5, 20)
+        );
+
+        when(authorRepository.findById(1)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+                authorService.updateAuthor(1, authorData))
+                .isInstanceOf(AuthorNotFoundException.class);
+
+        verify(authorRepository).findById(1);
+        verify(authorRepository, never()).save(any(Author.class));
+    }
+
+    @Test
+    void updateAuthor_shouldThrowDatabaseOperationException_whenRepositoryFails() {
+
+        Author authorData = new Author("Jane",
+                "Marie",
+                "Smith",
+                "F",
+                LocalDate.of(1920, 5, 20)
+        );
+
+        when(authorRepository.findById(1)).thenThrow(new DataAccessException("Database error") {});
+
+        assertThatThrownBy(() ->
+                authorService.updateAuthor(1, authorData))
+                .isInstanceOf(DatabaseOperationException.class)
+                .hasMessage("Unable to update author");
+
+        verify(authorRepository).findById(1);
+        verify(authorRepository, never()).save(any(Author.class));
+    }
+
+    @Test
     void findById_shouldReturnAuthor_whenAuthorExists() {
         Author author = new Author("Audrey",
                 null,

@@ -34,6 +34,7 @@ public class ConsoleApplication {
                     add-author          Adds new author to the table.
                     add-author-books    Adds new author along with books.
                     find-author         Finds author by id and prints it.
+                    update-author       Updates author info.
                     rm-author           Removes author from the table.
                     transfer-book       Transfers book to another author.
                     exit                Terminates the application.""";
@@ -63,6 +64,7 @@ public class ConsoleApplication {
                     case "add-author" -> addAuthor(scanner);
                     case "add-author-books" -> addAuthorWithBooks(scanner);
                     case "find-author" -> findAuthor(scanner);
+                    case "update-author" -> updateAuthor(scanner);
                     case "rm-author" -> deleteAuthor(scanner);
                     case "transfer-book" -> transferBook(scanner);
                     case "exit" -> {
@@ -77,6 +79,31 @@ public class ConsoleApplication {
                 System.out.println(e.getMessage());
             }
 
+        }
+
+    }
+
+    private void updateAuthor(Scanner scanner) {
+
+        System.out.print("Author ID: ");
+
+        Integer authorId;
+
+        try {
+            authorId = Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid author ID");
+            return;
+        }
+
+        try {
+            Author updatedAuthor = readAuthor(scanner);
+
+            authorService.updateAuthor(authorId, updatedAuthor);
+
+            System.out.println("Author (ID=" + authorId + ") updated successfully");
+        } catch (AuthorException e) {
+            System.out.println("Author (ID=" + authorId + ") was not updated: " + e.getMessage());
         }
 
     }
@@ -245,7 +272,7 @@ public class ConsoleApplication {
 
         try {
             Integer authorId = authorService.addAuthor(author);
-            System.out.println("Author (ID=" + authorId +") added successfully");
+            System.out.println("Author (ID=" + authorId + ") added successfully");
         } catch (InvalidAuthorException e) {
             System.out.println("Author was not added: " + e.getMessage());
         }

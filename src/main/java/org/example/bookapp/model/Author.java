@@ -116,6 +116,10 @@ public class Author {
         this.gender = gender;
     }
 
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
     public void setBooks(List<Book> books) {
         this.books = books;
     }
@@ -142,5 +146,4 @@ public class Author {
         books.remove(book);
         book.setAuthor(null);
     }
-
 }

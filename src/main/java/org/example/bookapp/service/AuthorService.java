@@ -69,14 +69,15 @@ public class AuthorService {
     }
 
     @Transactional
-    public void updateAuthor(Integer id, String firstName, String middleName, String lastName, String gender) {
+    public void updateAuthor(Integer id, Author updatedAuthor) {
         try {
             Author author = repository.findById(id).orElseThrow(AuthorNotFoundException::new);
 
-            author.setFirstName(firstName);
-            author.setMiddleName(middleName);
-            author.setLastName(lastName);
-            author.setGender(gender);
+            author.setFirstName(updatedAuthor.getFirstName());
+            author.setMiddleName(updatedAuthor.getMiddleName());
+            author.setLastName(updatedAuthor.getLastName());
+            author.setGender(updatedAuthor.getGender());
+            author.setBirthDate(updatedAuthor.getBirthDate());
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to update author", e);
         }
