@@ -81,7 +81,7 @@ public class BookService {
             if (authorId == null) throw new InvalidAuthorException("author ID cannot be null");
 
             return repository.findByNameContainingAndAuthor_Id(name, authorId);
-        } catch (DatabaseOperationException e) {
+        } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to find book", e);
         }
     }

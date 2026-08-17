@@ -256,5 +256,58 @@ class BookServiceTest {
         verify(authorRepository, never()).findById(anyInt());
     }
 
+    @Test
+    void findByNameAndAuthor_shouldReturnBooks() {
+
+        Book book1 = new Book("War and Peace", 1867);
+        Book book2 = new Book("Peace Like a River", 2001);
+
+        List<Book> books = List.of(book1, book2);
+
+        when(bookRepository.findByNameContainingAndAuthor_Id("Peace", 7)).thenReturn(books);
+
+        List<Book> result = bookService.findByNameAndAuthor("Peace", 7);
+
+        assertThat(result).containsExactly(book1, book2);
+
+        verify(bookRepository).findByNameContainingAndAuthor_Id("Peace", 7);
+    }
+
+    @Test
+    void findByNameAndAuthor_shouldReturnEmptyList_whenBooksNotFound() {
+
+        when(bookRepository.findByNameContainingAndAuthor_Id("Unknown", 7)).thenReturn(List.of());
+
+        List<Book> result = bookService.findByNameAndAuthor("Unknown", 7);
+
+        assertThat(result).isEmpty();
+
+        verify(bookRepository).findByNameContainingAndAuthor_Id("Unknown", 7);
+    }
+
+    @Test
+    void findByNameAndAuthor_shouldThrowInvalidBookException_whenNameIsBlank() {
+
+        assertThatThrownBy(() ->
+                bookService.findByNameAndAuthor("", 7))
+                .isInstanceOf(InvalidBookException.class)
+                .hasMessage("Book name cannot be null or blank");
+
+        verify(bookRepository, never()).findByNameContainingAndAuthor_Id(anyString(), anyInt());
+    }
+
+    @Test
+    void findByNameAndAuthor_shouldThrowDatabaseOperationException_whenRepositoryFails() {
+
+        when(bookRepository.findByNameContainingAndAuthor_Id("Peace", 7))
+                .thenThrow(new DataAccessException("Database error") {});
+
+        assertThatThrownBy(() ->
+                bookService.findByNameAndAuthor("Peace", 7))
+                .isInstanceOf(DatabaseOperationException.class)
+                .hasMessage("Unable to find book");
+
+        verify(bookRepository).findByNameContainingAndAuthor_Id("Peace", 7);
+    }
 
 }

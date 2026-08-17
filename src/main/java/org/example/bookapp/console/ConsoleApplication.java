@@ -31,6 +31,7 @@ public class ConsoleApplication {
                     add                 Adds new book to the table.
                     list                Prints all books from the table.
                     find                Finds book by its name and prints it.
+                    find-by-author      Finds book by its name and author id and prints it.
                     add-author          Adds new author to the table.
                     add-author-books    Adds new author along with books.
                     find-author         Finds author by id and prints it.
@@ -61,6 +62,7 @@ public class ConsoleApplication {
                     case "add" -> addBook(scanner);
                     case "list" -> listBooks();
                     case "find" -> findBook(scanner);
+                    case "find-by-author" -> findBooksByAuthor(scanner);
                     case "add-author" -> addAuthor(scanner);
                     case "add-author-books" -> addAuthorWithBooks(scanner);
                     case "find-author" -> findAuthor(scanner);
@@ -79,6 +81,37 @@ public class ConsoleApplication {
                 System.out.println(e.getMessage());
             }
 
+        }
+
+    }
+
+    private void findBooksByAuthor(Scanner scanner) {
+
+        System.out.print("Enter book name: ");
+        String name = scanner.nextLine().trim();
+
+        System.out.print("Enter author ID: ");
+        Integer authorId;
+
+        try {
+            authorId = Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid author ID");
+            return;
+        }
+
+        try {
+            List<Book> books = service.findByNameAndAuthor(name, authorId);
+
+            if (books.isEmpty()) {
+                System.out.println("No books found");
+                return;
+            }
+
+            System.out.println("Found books:");
+            printBooks(books);
+        } catch (InvalidBookException | InvalidAuthorException e) {
+            System.out.println(e.getMessage());
         }
 
     }
