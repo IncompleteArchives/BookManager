@@ -16,6 +16,9 @@ public class Author {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Version
+    private Long version;
+
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
@@ -146,4 +149,9 @@ public class Author {
         books.remove(book);
         book.setAuthor(null);
     }
+
+    public Long getVersion() {
+        return version;
+    }
+
 }

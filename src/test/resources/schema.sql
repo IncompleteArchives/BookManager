@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS authors (
     last_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     gender character varying(20) COLLATE pg_catalog."default",
     birth_date date,
+    version BIGINT NOT NULL DEFAULT 0,
     CONSTRAINT authors_pkey PRIMARY KEY (id)
 );
 

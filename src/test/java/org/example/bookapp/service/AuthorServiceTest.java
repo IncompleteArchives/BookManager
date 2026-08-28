@@ -316,7 +316,7 @@ class AuthorServiceTest {
 
         when(authorRepository.save(author)).thenReturn(author);
 
-        Integer result = authorService.addAuthor(author);
+        Integer result = authorService.addAuthor(author).getId();
 
         assertThat(result).isEqualTo(1);
 

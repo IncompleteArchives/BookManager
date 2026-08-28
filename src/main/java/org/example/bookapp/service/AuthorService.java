@@ -25,7 +25,7 @@ public class AuthorService {
         this.repository = repository;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<Author> findById(Integer id) {
         try {
             return repository.findByIdWithBooks(id);
@@ -60,9 +60,9 @@ public class AuthorService {
         }
     }
 
-    public Integer addAuthor(Author author) {
+    public Author addAuthor(Author author) {
         try {
-            return repository.save(author).getId();
+            return repository.save(author);
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to insert author", e);
         }

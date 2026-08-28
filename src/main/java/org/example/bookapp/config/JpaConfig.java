@@ -21,7 +21,6 @@ public class JpaConfig {
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(
             DataSource dataSource,
-            @Value("${hibernate.dialect}") String dialect,
             @Value("${hibernate.hbm2ddl.auto}") String ddlAuto,
             @Value("${hibernate.show_sql}") String showSql,
             @Value("${hibernate.format_sql}") String formatSql) {
@@ -30,10 +29,10 @@ public class JpaConfig {
 
         factory.setDataSource(dataSource);
         factory.setPackagesToScan("org.example.bookapp.model");
+        factory.setPersistenceUnitRootLocation("file:" + System.getProperty("java.io.tmpdir"));
         factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Properties properties = new Properties();
-        properties.setProperty("hibernate.dialect", dialect);
         properties.setProperty("hibernate.hbm2ddl.auto", ddlAuto);
         properties.setProperty("hibernate.show_sql", showSql);
         properties.setProperty("hibernate.format_sql", formatSql);

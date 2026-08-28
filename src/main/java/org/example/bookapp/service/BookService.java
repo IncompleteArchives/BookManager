@@ -1,8 +1,6 @@
 package org.example.bookapp.service;
 
-import org.example.bookapp.exception.DatabaseOperationException;
-import org.example.bookapp.exception.InvalidAuthorException;
-import org.example.bookapp.exception.InvalidBookException;
+import org.example.bookapp.exception.*;
 import org.example.bookapp.model.Author;
 import org.example.bookapp.model.Book;
 import org.example.bookapp.repository.AuthorRepository;
@@ -27,16 +25,16 @@ public class BookService {
         this.authorRepository = authorRepository;
     }
 
-    public void addBook(String name, Integer publicationYear, Integer authorId) {
+    public Book addBook(String name, Integer publicationYear, Integer authorId) {
         try {
 
             Book book = new Book(name, publicationYear);
 
-            Author author = authorRepository.findById(authorId).orElseThrow(() -> new InvalidAuthorException("author not found"));
+            Author author = authorRepository.findById(authorId).orElseThrow(AuthorNotFoundException::new);
 
             book.setAuthor(author);
 
-            repository.save(book);
+            return repository.save(book);
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to insert book", e);
         }
@@ -64,9 +62,9 @@ public class BookService {
     @Transactional
     public void transferBook(Integer bookId, Integer authorId) {
         try {
-            Book book = repository.findById(bookId).orElseThrow(() -> new InvalidBookException("book not found"));
+            Book book = repository.findById(bookId).orElseThrow(BookNotFoundException::new);
 
-            Author author = authorRepository.findById(authorId).orElseThrow(() -> new InvalidAuthorException("author not found"));
+            Author author = authorRepository.findById(authorId).orElseThrow(AuthorNotFoundException::new);
 
             book.setAuthor(author);
         } catch (DataAccessException e) {
@@ -83,6 +81,17 @@ public class BookService {
             return repository.findByNameContainingAndAuthor_Id(name, authorId);
         } catch (DataAccessException e) {
             throw new DatabaseOperationException("Unable to find book", e);
+        }
+    }
+
+    @Transactional
+    public void deleteBook(Integer id) {
+        try {
+            Book book = repository.findById(id).orElseThrow(BookNotFoundException::new);
+
+            repository.delete(book);
+        } catch (DataAccessException e) {
+            throw new DatabaseOperationException("Unable to delete book", e);
         }
     }
 

@@ -1,6 +1,7 @@
 package org.example.bookapp.integration;
 
 import org.example.bookapp.config.JpaConfig;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +13,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 
 @Configuration
-@ComponentScan("org.example.bookapp")
+@ComponentScan({
+        "org.example.bookapp.service",
+        "org.example.bookapp.repository"
+})
 @EnableTransactionManagement
 @Import(JpaConfig.class)
 public class PostgresTestConfig {

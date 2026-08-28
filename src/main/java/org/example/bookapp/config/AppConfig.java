@@ -8,7 +8,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 
 @Configuration
-@ComponentScan("org.example.bookapp")
+//@ComponentScan("org.example.bookapp")
+@ComponentScan("org.example.bookapp.service")
 @PropertySource("classpath:application.properties")
 @EnableTransactionManagement
 @Import(JpaConfig.class)

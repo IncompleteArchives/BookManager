@@ -1,8 +1,6 @@
 package org.example.bookapp.service;
 
-import org.example.bookapp.exception.DatabaseOperationException;
-import org.example.bookapp.exception.InvalidAuthorException;
-import org.example.bookapp.exception.InvalidBookException;
+import org.example.bookapp.exception.*;
 import org.example.bookapp.model.Author;
 import org.example.bookapp.model.Book;
 import org.example.bookapp.repository.AuthorRepository;
@@ -212,13 +210,13 @@ class BookServiceTest {
     }
 
     @Test
-    void transferBook_shouldThrowInvalidBookException_whenBookNotFound() {
+    void transferBook_shouldThrowBookNotFoundException_whenBookNotFound() {
 
         when(bookRepository.findById(1)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
                 bookService.transferBook(1, 7))
-                .isInstanceOf(InvalidBookException.class)
+                .isInstanceOf(BookNotFoundException.class)
                 .hasMessage("book not found");
 
         verify(bookRepository).findById(1);
@@ -226,7 +224,7 @@ class BookServiceTest {
     }
 
     @Test
-    void transferBook_shouldThrowInvalidAuthorException_whenAuthorNotFound() {
+    void transferBook_shouldThrowAuthorNotFoundException_whenAuthorNotFound() {
 
         Book book = new Book("Zeph", 1992);
 
@@ -235,7 +233,7 @@ class BookServiceTest {
 
         assertThatThrownBy(() ->
                 bookService.transferBook(1, 7))
-                .isInstanceOf(InvalidAuthorException.class)
+                .isInstanceOf(AuthorNotFoundException.class)
                 .hasMessage("author not found");
 
         verify(bookRepository).findById(1);
