@@ -19,6 +19,9 @@ public class Book {
     @Column(name = "publication_year")
     private Integer publicationYear;
 
+    @Column(name = "available_copies")
+    private Integer availableCopies = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     private Author author;
@@ -69,6 +72,14 @@ public class Book {
         this.author = author;
     }
 
+    public Integer getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public void setAvailableCopies(Integer availableCopies) {
+        this.availableCopies = availableCopies;
+    }
+
     @Override
     public String toString() {
         return String.format(
@@ -79,4 +90,5 @@ public class Book {
                 author != null ? author.getId() : null
         );
     }
+
 }

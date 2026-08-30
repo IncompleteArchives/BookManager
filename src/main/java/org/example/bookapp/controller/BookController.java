@@ -68,4 +68,13 @@ public class BookController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/borrow")
+    public ResponseEntity<Void> borrowBook(
+            @PathVariable(name = "id") Integer id) {
+
+        bookService.borrowBook(id);
+
+        return ResponseEntity.ok().build();
+    }
+
 }
