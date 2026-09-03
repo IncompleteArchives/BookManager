@@ -22,8 +22,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,7 +64,7 @@ class BookServiceIntegrationTest {
     @AfterAll
     static void tearDownClass() {
 
-            context.close();
+        context.close();
     }
 
     private static void initializeDatabase() throws SQLException {
@@ -98,11 +96,11 @@ class BookServiceIntegrationTest {
         );
 
         jdbcTemplate.update("""
-            INSERT INTO authors
-                (first_name, middle_name, last_name, gender, birth_date, version)
-            VALUES
-                (?, ?, ?, ?, ?, ?)
-            """,
+                        INSERT INTO authors
+                            (first_name, middle_name, last_name, gender, birth_date, version)
+                        VALUES
+                            (?, ?, ?, ?, ?, ?)
+                        """,
                 author.getFirstName(),
                 author.getMiddleName(),
                 author.getLastName(),
@@ -117,11 +115,11 @@ class BookServiceIntegrationTest {
         );
 
         jdbcTemplate.update("""
-            INSERT INTO books
-                (name, publication_year, author_id, available_copies)
-            VALUES
-                (?, ?, ?, ?)
-            """,
+                        INSERT INTO books
+                            (name, publication_year, author_id, available_copies)
+                        VALUES
+                            (?, ?, ?, ?)
+                        """,
                 "Book1",
                 1999,
                 authorId,
@@ -136,23 +134,34 @@ class BookServiceIntegrationTest {
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
         try {
+
+            CountDownLatch ready = new CountDownLatch(2);
             CountDownLatch start = new CountDownLatch(1);
 
             Callable<Boolean> borrowAttempt = () -> {
 
-                start.await();
+                ready.countDown();
+
+                boolean started = start.await(10, TimeUnit.SECONDS);
+
+                if (!started)
+                    throw new AssertionError("Timed out waiting for concurrent borrow start");
 
                 try {
                     bookService.borrowBook(bookId);
                     return true;
+
                 } catch (BookNotAvailableException e) {
                     return false;
                 }
             };
 
-            Future<Boolean> firstAttempt = executor.submit(borrowAttempt);
-
+            Future<Boolean> firstAttempt =  executor.submit(borrowAttempt);
             Future<Boolean> secondAttempt = executor.submit(borrowAttempt);
+
+            boolean bothReady = ready.await(10, TimeUnit.SECONDS);
+
+            assertThat(bothReady).as("Both borrow attempts must reach the ready barrier").isTrue();
 
             start.countDown();
 
@@ -171,7 +180,10 @@ class BookServiceIntegrationTest {
 
         } finally {
             executor.shutdownNow();
+
+            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS)).isTrue();
         }
+
     }
 
 }

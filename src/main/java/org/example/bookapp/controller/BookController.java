@@ -29,7 +29,8 @@ public class BookController {
         Book savedBook = bookService.addBook(
                 request.getName(),
                 request.getPublicationYear(),
-                request.getAuthorId()
+                request.getAuthorId(),
+                request.getAvailableCopies()
         );
 
         return ResponseEntity

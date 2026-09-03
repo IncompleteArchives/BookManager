@@ -5,6 +5,7 @@ public class BookRequest {
     private String name;
     private Integer publicationYear;
     private Integer authorId;
+    private Integer availableCopies;
 
     public BookRequest() {
     }
@@ -31,6 +32,14 @@ public class BookRequest {
 
     public void setAuthorId(Integer authorId) {
         this.authorId = authorId;
+    }
+
+    public Integer getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public void setAvailableCopies(Integer availableCopies) {
+        this.availableCopies = availableCopies;
     }
 
 }

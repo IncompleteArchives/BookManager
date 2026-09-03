@@ -29,10 +29,14 @@ public class BookService {
         this.authorRepository = authorRepository;
     }
 
-    public Book addBook(String name, Integer publicationYear, Integer authorId) {
+    public Book addBook(String name, Integer publicationYear, Integer authorId, Integer availableCopies) {
         try {
 
+            if (availableCopies == null || availableCopies < 0)
+                throw new InvalidBookException("availableCopies cannot be null or negative");
+
             Book book = new Book(name, publicationYear);
+            book.setAvailableCopies(availableCopies);
 
             Author author = authorRepository.findById(authorId).orElseThrow(AuthorNotFoundException::new);
 

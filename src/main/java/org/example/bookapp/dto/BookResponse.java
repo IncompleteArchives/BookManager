@@ -8,6 +8,7 @@ public class BookResponse {
     private String name;
     private Integer publicationYear;
     private Integer authorId;
+    private Integer availableCopies;
 
     public BookResponse() {
     }
@@ -20,6 +21,8 @@ public class BookResponse {
         this.authorId = book.getAuthor() != null
                 ? book.getAuthor().getId()
                 : null;
+
+        this.availableCopies = book.getAvailableCopies();
     }
 
     public Integer getId() {
@@ -36,6 +39,14 @@ public class BookResponse {
 
     public Integer getAuthorId() {
         return authorId;
+    }
+
+    public Integer getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public void setAvailableCopies(Integer availableCopies) {
+        this.availableCopies = availableCopies;
     }
 
 }

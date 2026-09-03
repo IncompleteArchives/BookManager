@@ -17,7 +17,7 @@ public class RequestIdFilter extends OncePerRequestFilter {
 
     private static final String REQUEST_ID_HEADER = "X-Request-Id";
     private static final String MDC_REQUEST_ID = "requestId";
-    private static final Logger log = LoggerFactory.getLogger(RequestIdFilter.class); //remove
+    private static final Logger log = LoggerFactory.getLogger(RequestIdFilter.class);
 
     @Override
     protected void doFilterInternal(

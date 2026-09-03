@@ -41,6 +41,7 @@ class BookServiceTest {
         String name = "SomeBook";
         Integer publicationYear = 1960;
         Integer authorId = 1;
+        Integer availableCopies = 1;
 
         Author author = new Author(
                 "Audrey",
@@ -54,7 +55,7 @@ class BookServiceTest {
 
         when(authorRepository.findById(authorId)).thenReturn(Optional.of(author));
 
-        bookService.addBook(name, publicationYear, authorId);
+        bookService.addBook(name, publicationYear, authorId, availableCopies);
 
         ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
 
@@ -71,7 +72,7 @@ class BookServiceTest {
     void addBook_shouldThrowInvalidBookException_whenNameIsBlank() {
 
         assertThatThrownBy(() ->
-                bookService.addBook("", 2007, 7))
+                bookService.addBook("", 2007, 7, 1))
                 .isInstanceOf(InvalidBookException.class)
                 .hasMessage("book name cannot be null or blank");
 
@@ -84,7 +85,7 @@ class BookServiceTest {
         int currentYear = Year.now().getValue();
 
         assertThatThrownBy(() ->
-                bookService.addBook("Zeph", currentYear + 1, 7))
+                bookService.addBook("Zeph", currentYear + 1, 7, 1))
                 .isInstanceOf(InvalidBookException.class)
                 .hasMessage("publication year must be between 1 and " + currentYear);
 
@@ -110,7 +111,7 @@ class BookServiceTest {
                 .when(bookRepository)
                 .save(any(Book.class));
 
-        assertThatThrownBy(() -> bookService.addBook("Zeph", 1992, 7))
+        assertThatThrownBy(() -> bookService.addBook("Zeph", 1992, 7, 1))
                 .isInstanceOf(DatabaseOperationException.class)
                 .hasMessage("Unable to insert book");
 
