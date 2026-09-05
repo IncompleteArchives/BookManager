@@ -6,12 +6,10 @@ import org.apache.catalina.startup.Tomcat;
 import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
 
-import org.example.bookapp.config.AppConfig;
-import org.example.bookapp.config.JpaConfig;
-import org.example.bookapp.config.RequestIdFilter;
-import org.example.bookapp.config.WebConfig;
+import org.example.bookapp.config.*;
 
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.io.File;
@@ -30,12 +28,11 @@ public class BookApplication {
         context.register(
                 AppConfig.class,
                 WebConfig.class,
-                JpaConfig.class
+                JpaConfig.class,
+                SecurityConfig.class
         );
 
         DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
-
-        RequestIdFilter requestIdFilter = new RequestIdFilter();
 
         String webappDir = System.getProperty("java.io.tmpdir");
 
@@ -43,6 +40,41 @@ public class BookApplication {
                 "/bookapp",
                 new File(webappDir).getAbsolutePath()
         );
+
+        context.setServletContext(tomcatContext.getServletContext());
+        context.refresh();
+
+
+        RequestIdFilter requestIdFilter = new RequestIdFilter();
+
+        FilterDef filterDef = new FilterDef();
+        filterDef.setFilterName("requestIdFilter");
+        filterDef.setFilter(requestIdFilter);
+
+        tomcatContext.addFilterDef(filterDef);
+
+        FilterMap requestIdFilterMap = new FilterMap();
+        requestIdFilterMap.setFilterName("requestIdFilter");
+        requestIdFilterMap.addURLPattern("/*");
+
+        tomcatContext.addFilterMap(requestIdFilterMap);
+
+
+        DelegatingFilterProxy securityFilter =
+                new DelegatingFilterProxy("springSecurityFilterChain", context);
+
+        FilterDef securityFilterDef = new FilterDef();
+        securityFilterDef.setFilterName("springSecurityFilterChain");
+        securityFilterDef.setFilter(securityFilter);
+
+        tomcatContext.addFilterDef(securityFilterDef);
+
+        FilterMap securityFilterMap = new FilterMap();
+        securityFilterMap.setFilterName("springSecurityFilterChain");
+        securityFilterMap.addURLPattern("/*");
+
+        tomcatContext.addFilterMap(securityFilterMap);
+
 
         Tomcat.addServlet(
                 tomcatContext,
@@ -55,17 +87,6 @@ public class BookApplication {
                 "dispatcher"
         );
 
-        FilterDef filterDef = new FilterDef();
-        filterDef.setFilterName("requestIdFilter");
-        filterDef.setFilter(requestIdFilter);
-
-        tomcatContext.addFilterDef(filterDef);
-
-        FilterMap filterMap = new FilterMap();
-        filterMap.setFilterName("requestIdFilter");
-        filterMap.addURLPattern("/*");
-
-        tomcatContext.addFilterMap(filterMap);
 
         tomcat.start();
 

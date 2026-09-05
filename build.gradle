@@ -11,6 +11,7 @@ repositories {
 
 ext {
     springVersion = '6.2.5'
+    springSecurityVersion = '6.5.3'
     jacksonVersion = '2.18.3'
 }
 
@@ -30,11 +31,15 @@ dependencies {
     // PostgreSQL
     implementation 'org.postgresql:postgresql:42.7.4'
 
-    //Spring Data JPA
+    // Spring Data JPA
     implementation 'org.springframework.data:spring-data-jpa:3.4.3'
-    //Hibernate
+    // Hibernate
     implementation 'org.hibernate.orm:hibernate-core:6.6.11.Final'
 
+    // Security
+    implementation "org.springframework.security:spring-security-core:${springSecurityVersion}"
+    implementation "org.springframework.security:spring-security-web:${springSecurityVersion}"
+    implementation "org.springframework.security:spring-security-config:${springSecurityVersion}"
 
     testImplementation platform('org.junit:junit-bom:6.0.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -47,13 +52,9 @@ dependencies {
     // AssertJ
     testImplementation 'org.assertj:assertj-core:3.27.3'
 
-    // Testcontainers/
+    // Testcontainers
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter:2.0.5'
     testImplementation 'org.testcontainers:testcontainers-postgresql:2.0.5'
-
-    // SLF4J
-    implementation 'org.slf4j:slf4j-api:2.0.17'
-    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.17'
 
     //Logback
     runtimeOnly 'ch.qos.logback:logback-classic:1.5.18'

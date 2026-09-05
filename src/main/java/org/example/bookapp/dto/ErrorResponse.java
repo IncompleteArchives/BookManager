@@ -1,10 +1,17 @@
 package org.example.bookapp.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 
 public class ErrorResponse {
 
+    @JsonFormat(
+            shape = JsonFormat.Shape.STRING,
+            pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+    )
     private final LocalDateTime timestamp;
+
     private final int status;
     private final String error;
     private final String message;

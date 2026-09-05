@@ -20,7 +20,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             InvalidAuthorException.class,
             InvalidBookException.class,
-            AuthorHasBooksException.class
+            AuthorHasBooksException.class,
+            InvalidUserException.class
     })
     public ResponseEntity<ErrorResponse> handleBadRequest(
             RuntimeException exception,
@@ -87,6 +88,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BookNotAvailableException.class)
     public ResponseEntity<ErrorResponse> handleBookNotAvailable(
             BookNotAvailableException exception,
+            HttpServletRequest request) {
+
+        return buildErrorResponse(
+                HttpStatus.CONFLICT,
+                exception.getMessage(),
+                request
+        );
+    }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameAlreadyExists(
+            UsernameAlreadyExistsException exception,
             HttpServletRequest request) {
 
         return buildErrorResponse(
